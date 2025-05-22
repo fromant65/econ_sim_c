@@ -167,3 +167,24 @@ Un UML de componentes o un diagrama de secuencia para el flujo de una jornada ay
 Definir una estrategia de gestión de concurrencia e hilos (si aplica)
 ### 5.13 Roadmap
 Definir el flujo de desarrollo por etapas esperado para facilitar el desarrollo en el tiempo y evitar bloqueos.
+### 5.14 Definir estandares de estilo codigo
+Idioma en el que se programa (preferiblemente ingles), que tipo de notacion para variables, funciones y constantes se usa (preferiblemente usar snake_case para variables y funciones en UPPER_SNAKE_CASE)
+### 5.15 Agregar un indice al principio de la documentación
+
+---
+
+## 6. Como compilar y ejecutar el programa
+
+### 6.1 Compilación
+Compilamos ejecutando el siguiente comando en una consola
+```bash
+make
+```
+Esto nos generará un ejecutable. Para eliminar los archivos .o ejecutamos
+```bash
+make clean
+```
+Si queremos correr el programa directamente, ejecutamos
+```bash
+make run
+```
