@@ -1,82 +1,140 @@
 # Econ Sim: Simulador de Modelos Económicos y Mercados
 
+## 📅 Índice
+
+1. [Resumen del Proyecto](#1-resumen-del-proyecto)
+2. [Modelos de la Simulación](#2-modelos-de-la-simulación)
+
+   * [2.1 POP](#21-pop)
+
+     * [2.1.1 Personalidad](#211-personalidad)
+     * [2.1.2 Necesidades](#212-necesidades)
+   * [2.2 Bien](#22-bien)
+
+     * [2.2.1 Bienes transables](#221-bienes-transables)
+     * [2.2.2 Bienes no transables](#222-bienes-no-transables)
+   * [2.3 Empresa](#23-empresa)
+   * [2.4 Región](#24-región)
+   * [2.5 Mercado](#25-mercado)
+3. [Flujo de la Simulación](#3-flujo-de-la-simulación)
+
+   * [3.1 Flujo del tiempo en la simulación y coordinación entre POPs y empresas](#31-flujo-del-tiempo-en-la-simulación-y-coordinación-entre-pops-y-empresas)
+4. [Arquitectura del Proyecto](#4-arquitectura-del-proyecto)
+
+   * [4.1 Estructuras (Structures)](#41-estructuras-structures)
+   * [4.2 Lógica Central (Service)](#42-lógica-central-service)
+   * [4.3 Interfaz de Usuario (UI)](#43-interfaz-de-usuario-ui)
+   * [4.4 Aplicación (Application)](#44-aplicación-application)
+   * [4.5 Persistencia de Datos (Repository)](#45-persistencia-de-datos-repository)
+   * [4.6 Testing](#46-testing)
+   * [4.7 Flujo de Datos entre Capas](#47-flujo-de-datos-entre-capas)
+   * [4.8 Aclaraciones](#48-aclaraciones)
+5. [Cómo Compilar y Ejecutar el Programa](#5-como-compilar-y-ejecutar-el-programa)
+
+   * [5.1 Compilación y limpieza](#51-compilación-y-limpieza)
+   * [5.2 Ejecución](#52-ejecución)
+6. [Estrategia de Testing](#6-estrategia-de-testing)
+
+   * [6.1 Testing unitario y de integración](#61-testing-unitario-y-de-integración)
+   * [6.2 Testing de memoria](#62-testing-de-memoria)
+   * [6.3 Testing de performance](#63-testing-de-performance)
+   * [6.4 Compilación de los test](#64-compilación-de-los-test)
+   * [6.5 Ejecución de los test](#65-ejecución-de-los-test)
+
 ## 1. Resumen del Proyecto
 
-**Objetivo:**  
-El proyecto "Econ Sim" tiene como propósito simular modelos económicos y dinámicas de mercado a partir de la interacción de agentes que producen, consumen e intercambian bienes para satisfacer sus necesidades.
+**Objetivo:**
+El proyecto "Econ Sim" tiene como propósito simular modelos económicos y dinámicas de mercado a partir de la interacción de grupos de población que producen, consumen e intercambian bienes para satisfacer sus necesidades y generar ganancias.
+El objetivo del proyecto es poder derivar conclusiones macroeconomicas basadas en interacciones microeconomicas entre agentes con personalidades distintas que definan su comportamiento esperado.
 
 ---
 
-## 2. Modelos de Simulación
+## 2. Modelos de la Simulación
 
-### 2.1 Agente
-- **Descripción:**  
-  Representa al actor principal de la simulación. Cada agente está diseñado para:
-  - Interactuar con otros agentes mediante el intercambio de bienes basado en condiciones predeterminadas.
-  - Poseer una función de costos individual que determina la productividad de su trabajo (particularmente, determina la cantidad de materia prima y output esperado)
-  - Poseer una funcion de demanda final, la cual utiliza la funcion de demanda de la personalidad para demandar la cantidad final de bienes que el agente va a consumir. Depende del nivel de vida esperado y de la funcion de costos del agente
+### 2.1 POP
+- **Descripcion**
+  Representa a grupos de población con caracteristicas similares. Los mismos comparten:
+  - Personalidad
+  - Lugar de residencia
+  - Lugar de trabajo (Empresa)
+  - Profesión
+  Cada POP tiene una cantidad determinada de población la cual puede fluctuar durante la simulación.
 
-### 2.2 Pop
-- **Descripción:**  
-  Conjunto de agentes con características similares, que comparten necesidades y funciones laborales.
-- **Motivación:**  
-  La agrupación de agentes simplifica el cómputo, ya que se puede asumir un comportamiento homogéneo en determinados contextos de simulación.
+#### 2.1.1 Personalidad
+- **Descripcion**
+  Representa el conjunto de atributos que posee una POP que lo diferencian del resto respecto a sus preferencias
+  - Determina las necesidades
+  - Determina la propensión al consumo
+  - Determina la propensión a la procreación
 
-### 2.3 Necesidades
-- **Descripción:**  
-  Este modelo determina los motivos subyacentes por los cuales un agente desea consumir determinados bienes, además de definir en qué cantidad se los consume (para cubrir 1 unidad de necesidad) y qué bienes cubren dicha necesidad.
-- **Importancia:**  
-  La lista de necesidades es fundamental, pues define el perfil o la _personalidad_ del agente y, por ende, su comportamiento en el mercado.
+#### 2.1.2 Necesidades
+- **Descripcion**
+  Una necesidad es una caracteristica de la personalidad que determina el deseo de una POP de consumir determinada cantidad de ciertos bienes.
+- **Formas de cubrirlas**
+  Cada necesidad se cubre con una cierta cantidad de algún bien dentro de un grupo de bienes.
+  Por ejemplo:
+  - Hambre: verduras, carne, queso, etc
+  - Vestimenta: ropa simple, ropa de lujo, etc
 
-### 2.4 Personalidad
+### 2.2 Bien
 - **Descripción:**  
-  Conjunto de necesidades recurrentes que configuran la toma de decisiones de un agente.
-- **Función:**  
-  Establece la función de demanda, determinando qué bienes son prioritarios para cada agente en función de su perfil.
-
-### 2.5 Bien
-- **Descripción:**  
-  Representa cada elemento producido y consumido por los agentes.  
+  Representa cada elemento producido y consumido por las POPs.  
 - **Dinámica de Precios:**  
-  Cada bien tiene un precio que fluctúa en cada jornada según la oferta y la demanda registradas en el mercado. La proporcion en la que esto ocurre por cada unidad del bien comerciado se deriva del promedio de las personalidades de todas las agentes (esto es, la funcion de elasticidad de cada bien va a depender de las preferencias de cada uno de los consumidores)
+  Cada bien tiene un precio que fluctúa en cada jornada según la oferta y la demanda registradas en el mercado. La proporcion en la que esto ocurre por cada unidad del bien comerciado se deriva del promedio de las personalidades de todas las POPs (esto es, la funcion de elasticidad de cada bien va a depender de las preferencias de cada uno de los consumidores)
+#### 2.2.1 Bienes transables
+Representan aquellos que pueden ser comercializados entre regiones (materias primas, comida, vestimenta, etc)
+#### 2.2.2 Bienes no transables
+Son los que solo se pueden comerciar dentro de una region (transporte, educacion, salud, etc)
 
-### 2.6 Mercado
+### 2.3 Empresa
 - **Descripción:**  
-  Espacio de intercambio donde los agentes pueden adquirir bienes y ofertar sus productos. El mercado dispone los bienes de los agentes y les permite acceder a ellos a través del comercio
-- **Rol:**  
-  Opera como interfaz intermedia y regula las transacciones, ajustando los precios de los bienes en función del balance entre oferta y demanda.
+  Es el modelo que se encarga de coordinar la producción de bienes. Utiliza bienes intermedios, materia prima y mano de obra para llevar a cabo la producción.
+  La funcion de costos de la empresa depende de la mano de obra que utilicen, de la proporción de bienes y del capital utlizado en la producción.
+- **Empresas intermediarias**
+  Son aquellas que manejan el comercio entre regiones (se explica de forma más extensa en el apartado 2.5). Cualquier empresa puede volverse intermediaria si lo considera rentable.
 
+### 2.4 Región
+- **Descripción:** 
+Las regiones son los lugares fisicos donde ocurre la producción, donde viven las POPs y de donde se extraen los bienes primarios. Además, las regiones tienen distancias definidas entre sí que pueden afectar la eficiencia del comercio.
+
+### 2.5 Mercado
+- **Descripción:**  
+  Espacio de intercambio donde las POPs y empresas pueden adquirir bienes y ofertar sus productos. El mercado dispone los bienes dados por las empresas y POPs y les permite acceder a ellos a través del comercio. Existe un mercado por región.
+- **Rol:**  
+  Opera como interfaz intermedia y regula las transacciones, guardando información necesaria para el ajuste de precios.
+- **Existencia de empresas intermediarias**
+  Como en una misma region todo el comercio se regula mediante un solo mercado, la existencia de empresas intermediarias a nivel local no tiene sentido. Para manejar el comercio entre regiones existen empresas intermediarias que comercian bienes entre regiones, llevando bienes de una region a otra como parte de sus tareas. Sin embargo, el comercio entre regiones tiene costos extra de transporte (que a su vez dependen de los bienes de transporte disponibles en el mercado).
 ---
 
 ## 3. Flujo de la Simulación
 
 1. **Inicio de la Jornada:**
-   - Un agente inicia un nuevo día identificando las necesidades que debe satisfacer.
+   - Una POP inicia un nuevo día identificando las necesidades que debe satisfacer.
 2. **Revisión de Recursos:**
-   - El agente verifica los bienes que posee y que pueden cubrir sus necesidades.
+   - La POP verifica los bienes que posee y que pueden cubrir sus necesidades.
 3. **Producción o Trabajo:**
-   - Ante la falta de recursos suficientes, el agente procede a trabajar para generar nuevos bienes.
-   - Si los recursos fueran suficientes, dependerá de su personalidad si decide o no trabajar.
+   - La POP comienza su día laboral asistiendo a la empresa donde trabaja. Allí se le proveen los bienes y herramientas necesarios para llevar a cabo dicha producción. Una vez que termina de producir, se le paga la remuneración acordada.
 4. **Operaciones de Mercado:**
-   - Una vez finalizada la jornada laboral, el agente vende los bienes producidos en el mercado.
-   - Con los ingresos obtenidos, se adquieren los bienes necesarios para cubrir las necesidades del día siguiente. La cantidad adquirida de cada bien dependerá de los ingresos y personalidad del agente (pueden haber personalidades mas austeras y otras más consumistas).
+   - Una vez finalizada la jornada laboral, la empresa vende los bienes producidos en el mercado.
+   - La POP puede optar por vender bienes en su posesión si necesitara recursos extra.
+   - Las empresas proceden a comprar los bienes necesarios para la producción del día siguiente (según la producción esperada y los recursos disponibles), y las POPs los bienes necesarios para cubrir sus necesidades. La cantidad adquirida dependerá de la personalidad de la POP y de los recursos que posea
 5. **Iteración:**
-   - La jornada concluye y se inicia el siguiente ciclo, ajustando los precios de los bienes según la nueva oferta y demanda.
+   - La jornada concluye y se inicia el siguiente ciclo, ajustando los precios de los bienes según la nueva oferta y demanda y las elasticidades de cada bien particular.
 
-> **Nota:** El precio de cada bien es dinámico y se regula en función de las interacciones de oferta y demanda durante cada jornada.
+> **Nota:** El precio de cada bien es dinámico y se regula en función de las interacciones de oferta y demanda durante cada jornada. Los precios ademas son locales al mercado de cada región.
 
-### 3.1 Flujo del tiempo en la simulación y coordinación entre agentes
-Cada iteración corresponde a una jornada. Dentro de cada jornada, los agentes deben realizar 3 tareas
+### 3.1 Flujo del tiempo en la simulación y coordinación entre POPs y empresas
+Cada iteración corresponde a una jornada. Dentro de cada jornada, las POPs deben realizar 3 tareas
  - Cubrir sus necesidades
  - Trabajar
  - Comerciar
-Cubrir sus necesidades y trabajar son dos tipos de operaciones que los agentes pueden realizar en paralelo (ya que no dependen de otros agentes), por lo que se calcularan de esta forma.
+Cubrir sus necesidades y trabajar son dos tipos de operaciones que las POPs pueden realizar en paralelo (ya que no dependen de otras POPs para hacerlo), por lo que se calcularan en paralelo.
 Comerciar es una actividad que requiere varias etapas:
  - Llevar los bienes al mercado
  - Reconocer qué bienes hay en el mercado
  - Comprar los bienes necesarios
-Además, el stock de bienes no es infinito, por lo que habrá bienes que ciertos agentes puedan adquirir y que otros agentes no, por lo que las últimas dos etapas representan un desafío interesante si queremos evitar linealizar el procesamiento de todos los agentes.
-En este sentido, la tarea de llevar los bienes al mercado se puede paralelizar. Una vez el mercado tiene todo el stock disponible, los agentes pueden comenzar a comerciar. Para ello, se establecerá un orden aleatorio en el que los agentes acceden al mercado (para garantizar equidad de acceso en el largo plazo) y cada agente comprará los bienes que necesite en 3 etapas (esto evita que los agentes con personalidades mas consumistas dejen sin bienes al resto, en caso de escasez significativa, el número 3 es arbitrario).
+Además, el stock de bienes no es infinito, por lo que habrá bienes que ciertas POPs o empresas puedan adquirir y que otras no, por lo que las últimas dos etapas representan un desafío interesante si queremos evitar linealizar el procesamiento de la etapa de comercio.
+En este sentido, la tarea de llevar los bienes al mercado se puede paralelizar. Una vez el mercado tiene todo el stock disponible, los agentes (POPs y empresas) pueden comenzar a comerciar. Para ello, se establecerá un orden aleatorio en el que los agentes acceden al mercado (para garantizar equidad de acceso en el largo plazo) y cada agente comprará los bienes que necesite en 3 etapas (esto evita que los agentes con mayor propensión al consumo dejen sin bienes al resto, en caso de escasez significativa. El número 3 es arbitrario).
 
 ---
 
@@ -139,43 +197,9 @@ Dado que se opta por desarrollar desde cero en C, siendo un lenguaje de bajo niv
 
 ---
 
-## 5. Materias pendientes
-En esta sección se detallan cuestiones importantes que faltan definir para la implementación del proyecto.
-### 5.1 Manejo de errrores
-Definir una estrategia de manejo de errores dentro del programa.
-### 5.2 Logging
-Definir una implementación de logs (preferiblemente en archivos) para recopilar información interna importante de la ejecución del programa.
-### 5.3 Manejo de memoria
-Definir explicitamente cual es el patron por el cual se va a manejar la memoria dentro del proyecto.
-### 5.4 Definición de interfaces de modelos
-Definir los métodos y parametros que va a utilizar cada modelo descrito en la sección 2, además de las interfaces a usar para comunicarse con los otros modelos.
-### 5.5 Definición de interfaces de capas
-Definir cómo van a interactuar las distintas capas entre sí para garantizar la intercambiabilidad de módulos de ser necesario.
-### 5.6 Definición de librería de Testing
-Definir con qué herramientas se va a realizar el testing en el proyecto.
-### 5.7 Definición de un apartado de configuración y parametrización general
-Se requiere un apartado que detalle ciertos parametros como la cantidad de agentes y bienes, los rangos de precios, o los valores que determinan las necesidades, y que explique la razón detrás de los mismos, además de proyecciones de cómo podrían cambiar en el tiempo (ejemplo, se puede empezar con 3 bienes para testear una version inicial del modelo y ampliar ese número lo máximo posible con el tiempo).
-### 5.8 Detalle de las estrategias de testing para cada capa
-Detallar cómo se implementan los test en cada capa, si es que tienen alguna particularidad a mencionar.
-### 5.9 Detalle de posibles implementaciones particulares de UI y capa de persistencia
-Describir cómo se mostrarán los datos al usuario y cómo se van a guardar.
-### 5.10 Definición de un menú de control para toda la app
-Describir un flujo externo a la simulación que nos permita cargar otras simulaciones previas, borrarlas, etc. Esto ademas implica la definición de estrategias especificas de configuracion de simulaciones para parametrizarlas.
-### 5.11 Diagrama de alto nivel
-Un UML de componentes o un diagrama de secuencia para el flujo de una jornada ayudaría a visualizar la interacción entre agentes y capas.
-### 5.12 Gestión de concurrencia
-Definir una estrategia de gestión de concurrencia e hilos (si aplica)
-### 5.13 Roadmap
-Definir el flujo de desarrollo por etapas esperado para facilitar el desarrollo en el tiempo y evitar bloqueos.
-### 5.14 Definir estandares de estilo codigo
-Idioma en el que se programa (preferiblemente ingles), que tipo de notacion para variables, funciones y constantes se usa (preferiblemente usar snake_case para variables y funciones en UPPER_SNAKE_CASE)
-### 5.15 Agregar un indice al principio de la documentación
+## 5. Como compilar y ejecutar el programa
 
----
-
-## 6. Como compilar y ejecutar el programa
-
-### 6.1 Compilación
+### 5.1 Compilación y limpieza
 Compilamos ejecutando el siguiente comando en una consola
 ```bash
 make
@@ -184,7 +208,72 @@ Esto nos generará un ejecutable. Para eliminar los archivos .o ejecutamos
 ```bash
 make clean
 ```
+### 5.2 Ejecución
 Si queremos correr el programa directamente, ejecutamos
 ```bash
 make run
 ```
+Esto además limpiará los archivos .o
+
+## 6. Estrategia de testing
+### 6.1 Testing unitario y de integración
+Se generarán archivos con extensión .test.c (con sus respectivos headers) los cuales contengan funciones de testing para cada uno de los modulos. mediante un archivo (type).test.c  (donde type es unit o integration) se ejecutarán de forma centralizada todos los test a la vez.
+Los test deberán generar una salida a un archivo de texto con los logs de todos los test que hayan fallado, junto con una estadistica general (total de tests, tests exitosos, tests fallidos)
+Para generar la salida de los test que fallan, se utilizarán macros similares a assert que den información extra, por ejemplo
+```C
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MY_ASSERT(expr, msg) do { \
+    if (!(expr)) { \
+        fprintf(stderr, "Assertion failed: %s\nFile: %s, Line: %d - %s\n", #expr, __FILE__, __LINE__, msg); \
+        return 1; \
+    } \
+} while (0)
+
+```
+### 6.2 Testing de memoria
+Se utilizará Valgrind para corroborar que no ocurran leaks de memoria durante la ejecución del programa.
+Se automatizará su uso mediante scripts de bash para ejecutar y analizar mas eficientemente la salida brindada por valgrind. Dichas salidas se guardaran en archivos de log para su posterior análisis
+### 6.3 Testing de performance
+Se utilizará una estrategia similar a la del punto 6.2, pero con el uso de funciones como clock() para medir el tiempo de ejecución de ciertas funciones críticas.
+### 6.4 Compilación de los test
+Se utilizará un makefile para los test unitarios y uno para los test de integración.
+### 6.5 Ejecución de los test
+Un script de bash se utilizará para realizar las siguientes tareas en orden
+1. Compilar todos los test
+2. Ejecutar tests unitarios
+3. Ejecutar tests de integración
+4. Ejecutar tests de memoria
+5. Ejecutar tests de performance
+6. Recopilar toda la información en un archivo de resumen con formato adecuado
+
+## Materias pendientes
+En esta sección se detallan cuestiones importantes que faltan definir para la implementación del proyecto.
+### 1 Manejo de errrores
+Definir una estrategia de manejo de errores dentro del programa.
+### 2 Logging
+Definir una implementación de logs (preferiblemente en archivos) para recopilar información interna importante de la ejecución del programa.
+### 3 Manejo de memoria
+Definir explicitamente cual es el patron por el cual se va a manejar la memoria dentro del proyecto.
+### 4 Definición de interfaces de modelos
+Definir los métodos y parametros que va a utilizar cada modelo descrito en la sección 2, además de las interfaces a usar para comunicarse con los otros modelos.
+### 5 Definición de interfaces de capas
+Definir cómo van a interactuar las distintas capas entre sí para garantizar la intercambiabilidad de módulos de ser necesario.
+### 7 Definición de un apartado de configuración y parametrización general
+Se requiere un apartado que detalle ciertos parametros como la cantidad de agentes y bienes, los rangos de precios, o los valores que determinan las necesidades, y que explique la razón detrás de los mismos, además de proyecciones de cómo podrían cambiar en el tiempo (ejemplo, se puede empezar con 3 bienes para testear una version inicial del modelo y ampliar ese número lo máximo posible con el tiempo).
+### 9 Detalle de posibles implementaciones particulares de UI y capa de persistencia
+Describir cómo se mostrarán los datos al usuario y cómo se van a guardar.
+### 10 Definición de un menú de control para toda la app
+Describir un flujo externo a la simulación que nos permita cargar otras simulaciones previas, borrarlas, etc. Esto ademas implica la definición de estrategias especificas de configuracion de simulaciones para parametrizarlas.
+### 11 Diagrama de alto nivel
+Un UML de componentes o un diagrama de secuencia para el flujo de una jornada ayudaría a visualizar la interacción entre agentes y capas.
+### 12 Gestión de concurrencia
+Definir una estrategia de gestión de concurrencia e hilos (si aplica)
+### 13 Roadmap
+Definir el flujo de desarrollo por etapas esperado para facilitar el desarrollo en el tiempo y evitar bloqueos.
+### 14 Definir estandares de estilo codigo
+Idioma en el que se programa (preferiblemente ingles), que tipo de notacion para variables, funciones y constantes se usa (preferiblemente usar snake_case para variables y funciones en UPPER_SNAKE_CASE)
+### 16 Definir cómo se comportarán las funciones de costos de las empresas
+Idealmente, esta función no debe tener "numeros mágicos", sino que debe derivar su funcionamiento de variables esenciales dentro de la simulación
+---
